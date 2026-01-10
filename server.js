@@ -15,6 +15,7 @@ const dbConfig = {
     queueLimit: 0
 };
 
+
 // initialize express app
 const app = express();
 // allows app to read JSON
@@ -32,6 +33,44 @@ app.get('/allcards', async (req, res) => {
     }
 });
 
+
+// Route: Get all games
+app.get('/allgames', async (req, res) => {
+    try {
+        let connection = await mysql.createConnection(dbConfig);
+        const [rows] = await connection.execute('SELECT * FROM defaultdb.games');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({message: 'Server Error for allgames'});
+    }
+});
+
+
+// Route: Update a game
+app.post('/updategame', async (req, res) => {
+    const { game_id, game, game_link, game_img } = req.body;
+
+    try {
+        const connection = await mysql.createConnection(dbConfig);
+
+        const [result] = await connection.execute(
+            'UPDATE games SET game = ?, game_link = ?, game_img = ? WHERE game_id = ?',
+            [game, game_link, game_img, game_id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        res.json({ message: 'Game updated successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error for updategame' });
+    }
+});
+
+
 // Example Route: Create a new card
 app.post('/addcard', async (req, res) => {
     const{card_name, card_pic} = req.body;
@@ -47,6 +86,47 @@ app.post('/addcard', async (req, res) => {
         res.status(201).send({message: `Server error - could not add ${card_name}`});
     }
 });
+
+// Route: Create a new game
+app.post('/addgame', async (req, res) => {
+    const{game, game_link, game_img} = req.body;
+    try{
+        let connection = await mysql.createConnection(dbConfig);
+        await connection.execute(
+            'INSERT INTO games (game, game_link, game_img) VALUES (?, ?, ?)',
+            [game, game_link, game_img]
+        )
+        res.status(201).json({message: `Game ${game} added successfully`});
+    } catch (err) {
+        console.error(err);
+        res.status(201).send({message: `Server error - could not add ${game}`});
+    }
+});
+
+
+// Route: Delete a game
+app.post('/deletegame', async (req, res) => {
+    const { game_id } = req.body;
+
+    try {
+        let connection = await mysql.createConnection(dbConfig);
+
+        const [result] = await connection.execute(
+            'DELETE FROM games WHERE game_id = ?',
+            [game_id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Game not found' });
+        }
+
+        res.status(200).json({ message: 'Game deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error - could not delete game' });
+    }
+});
+
 
 app.listen(port, () => {
     console.log(`Server is running on port https://localhost:${port}`);
