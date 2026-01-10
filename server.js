@@ -60,10 +60,10 @@ app.post('/updategame', async (req, res) => {
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Game not found' });
+            return res.status(404).json({ message: `${game} not found` });
         }
 
-        res.json({ message: 'Game updated successfully' });
+        res.json({ message: `${game} updated successfully` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error for updategame' });
@@ -96,7 +96,7 @@ app.post('/addgame', async (req, res) => {
             'INSERT INTO games (game, game_link, game_img) VALUES (?, ?, ?)',
             [game, game_link, game_img]
         )
-        res.status(201).json({message: `Game ${game} added successfully`});
+        res.status(201).json({message: `${game} added successfully`});
     } catch (err) {
         console.error(err);
         res.status(201).send({message: `Server error - could not add ${game}`});
@@ -117,13 +117,13 @@ app.post('/deletegame', async (req, res) => {
         );
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Game not found' });
+            return res.status(404).json({ message: `${game} not found` });
         }
 
-        res.status(200).json({ message: 'Game deleted successfully' });
+        res.status(200).json({ message: `${game} deleted successfully` });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'Server error - could not delete game' });
+        res.status(500).json({ message: `Server error - could not delete ${game}` });
     }
 });
 
